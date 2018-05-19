@@ -3639,6 +3639,20 @@ const char * const MSG_WATCH_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_WATCH_DE
 };
 
+const char MSG_SECOND_SERIAL_OFF_EN[] PROGMEM = "RPi port    [off]";
+const char MSG_SECOND_SERIAL_OFF_CZ[] PROGMEM = "RPi port    [vyp]";
+const char * const MSG_SECOND_SERIAL_OFF_LANG_TABLE[LANG_NUM] PROGMEM = {
+  MSG_SECOND_SERIAL_OFF_EN,
+  MSG_SECOND_SERIAL_OFF_CZ
+};
+
+const char MSG_SECOND_SERIAL_ON_EN[] PROGMEM = "RPi port     [on]";
+const char MSG_SECOND_SERIAL_ON_CZ[] PROGMEM = "RPi port    [zap]";
+const char * const MSG_SECOND_SERIAL_ON_LANG_TABLE[LANG_NUM] PROGMEM = {
+  MSG_SECOND_SERIAL_ON_EN,
+  MSG_SECOND_SERIAL_ON_CZ
+};
+
 const char MSG_WATCHDOG_RESET_EN[] PROGMEM = " Watchdog Reset";
 const char * const MSG_WATCHDOG_RESET_LANG_TABLE[1] PROGMEM = {
 	MSG_WATCHDOG_RESET_EN

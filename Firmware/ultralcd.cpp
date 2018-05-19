@@ -3466,6 +3466,16 @@ void lcd_wizard(int state) {
 	lcd_update(2);
 }
 
+#ifdef HAS_SECOND_SERIAL_PORT
+void lcd_second_serial_set() {
+  if(selectedSerialPort == 1) selectedSerialPort = 0;
+  else selectedSerialPort = 1;
+  eeprom_update_byte((unsigned char *)EEPROM_SECOND_SERIAL_ACTIVE, selectedSerialPort);
+  MYSERIAL.begin(BAUDRATE);
+  lcd_goto_menu(lcd_settings_menu);//doesn't break menuStack
+}
+#endif //HAS_SECOND_SERIAL_PORT
+
 static void lcd_settings_menu()
 {
   EEPROM_read(EEPROM_SILENT, (uint8_t*)&SilentModeMenu, sizeof(SilentModeMenu));
@@ -3482,6 +3492,15 @@ static void lcd_settings_menu()
   {
 	  MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
   }
+
+  #ifdef HAS_SECOND_SERIAL_PORT
+  if (selectedSerialPort == 0) {
+    MENU_ITEM(function, MSG_SECOND_SERIAL_OFF, lcd_second_serial_set);
+  }
+  else {
+    MENU_ITEM(function, MSG_SECOND_SERIAL_ON, lcd_second_serial_set);
+  }
+  #endif //HAS_SECOND_SERIAL
     
   if (!farm_mode) { //dont show in menu if we are in farm mode
 	  switch (SilentModeMenu) {

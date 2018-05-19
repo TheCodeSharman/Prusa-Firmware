@@ -204,6 +204,9 @@
 #define MSG_SELFTEST						"Selftest         "
 #define MSG_SELFTEST_FAILED					"Selftest selhal  "
 
+#define MSG_SECOND_SERIAL_ON                 "RPi port    [zap]"
+#define MSG_SECOND_SERIAL_OFF                "RPi port    [vyp]"
+
 #define MSG_STATISTICS						"Statistika  "
 #define MSG_USB_PRINTING					"Tisk z USB  "
 

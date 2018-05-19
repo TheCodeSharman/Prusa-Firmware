@@ -204,6 +204,9 @@
 #define MSG_HOMEYZ_PROGRESS                 "Calibrating Z"
 #define MSG_HOMEYZ_DONE		                "Calibration done"
 
+#define(length=17, lines=1) MSG_SECOND_SERIAL_ON        "RPi port     [on]"
+#define(length=17, lines=1) MSG_SECOND_SERIAL_OFF       "RPi port    [off]"
+
 #define(length=17,lines=1) MSG_SHOW_END_STOPS					"Show end stops"
 #define MSG_CALIBRATE_BED					"Calibrate XYZ"
 #define MSG_CALIBRATE_BED_RESET				"Reset XYZ calibr."

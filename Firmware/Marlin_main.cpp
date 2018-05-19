@@ -1025,6 +1025,10 @@ void setup()
 	lcd_print_at_PGM(0, 2, PSTR("    3D  Printers    "));
 	setup_killpin();
 	setup_powerhold();
+
+  selectedSerialPort = eeprom_read_byte((uint8_t*)EEPROM_SECOND_SERIAL_ACTIVE);
+  if (selectedSerialPort == 0xFF) selectedSerialPort = 0;
+  
 	farm_mode = eeprom_read_byte((uint8_t*)EEPROM_FARM_MODE);
 	EEPROM_read_B(EEPROM_FARM_NUMBER, &farm_no);
 	if ((farm_mode == 0xFF && farm_no == 0) || ((uint16_t)farm_no == 0xFFFF))
@@ -1170,118 +1174,6 @@ void setup()
 	{
 		//_delay_ms(1000);  // wait 1sec to display the splash screen // what's this and why do we need it?? - andre
 	}
-
-void show_fw_version_warnings() {
-	if (FW_DEV_VERSION == FW_VERSION_GOLD || FW_DEV_VERSION == FW_VERSION_RC) return;
-	switch (FW_DEV_VERSION) {
-	case(FW_VERSION_ALPHA):   lcd_show_fullscreen_message_and_wait_P(MSG_FW_VERSION_ALPHA);   break;
-	case(FW_VERSION_BETA):    lcd_show_fullscreen_message_and_wait_P(MSG_FW_VERSION_BETA);    break;
-  case(FW_VERSION_DEVEL):
-	case(FW_VERSION_DEBUG):
-    lcd_update_enable(false);
-    lcd_implementation_clear();
-  #if FW_DEV_VERSION == FW_VERSION_DEVEL
-    lcd_print_at_PGM(0, 0, PSTR("Development build !!"));
-  #else
-    lcd_print_at_PGM(0, 0, PSTR("Debbugging build !!!"));
-  #endif
-    lcd_print_at_PGM(0, 1, PSTR("May destroy printer!"));
-    lcd_print_at_PGM(0, 2, PSTR("ver ")); lcd_printPGM(PSTR(FW_VERSION_FULL));
-    lcd_print_at_PGM(0, 3, PSTR(FW_REPOSITORY));
-    lcd_wait_for_click();
-    break;
-	default: lcd_show_fullscreen_message_and_wait_P(MSG_FW_VERSION_UNKNOWN); break;
-	}
-	lcd_update_enable(true);
-}
-
-uint8_t check_printer_version()
-{
-	uint8_t version_changed = 0;
-	uint16_t printer_type = eeprom_read_word((uint16_t*)EEPROM_PRINTER_TYPE);
-	uint16_t motherboard = eeprom_read_word((uint16_t*)EEPROM_BOARD_TYPE);
-
-	if (printer_type != PRINTER_TYPE) {
-		if (printer_type == 0xffff) eeprom_write_word((uint16_t*)EEPROM_PRINTER_TYPE, PRINTER_TYPE);
-		else version_changed |= 0b10;
-	}
-	if (motherboard != MOTHERBOARD) {
-		if(motherboard == 0xffff) eeprom_write_word((uint16_t*)EEPROM_BOARD_TYPE, MOTHERBOARD);
-		else version_changed |= 0b01;
-	}
-	return version_changed;
-}
-
-void erase_eeprom_section(uint16_t offset, uint16_t bytes)
-{
-	for (int i = offset; i < (offset+bytes); i++) eeprom_write_byte((uint8_t*)i, 0xFF);
-}
-
-// "Setup" function is called by the Arduino framework on startup.
-// Before startup, the Timers-functions (PWM)/Analog RW and HardwareSerial provided by the Arduino-code 
-// are initialized by the main() routine provided by the Arduino framework.
-void setup()
-{
-    lcd_init();
-	fdev_setup_stream(lcdout, lcd_putchar, NULL, _FDEV_SETUP_WRITE); //setup lcdout stream
-	lcd_splash();
-	setup_killpin();
-	setup_powerhold();
-
-//*** MaR::180501_02b
-	farm_mode = eeprom_read_byte((uint8_t*)EEPROM_FARM_MODE); 
-	EEPROM_read_B(EEPROM_FARM_NUMBER, &farm_no);
-	if ((farm_mode == 0xFF && farm_no == 0) || ((uint16_t)farm_no == 0xFFFF)) 
-		farm_mode = false; //if farm_mode has not been stored to eeprom yet and farm number is set to zero or EEPROM is fresh, deactivate farm mode
-	if ((uint16_t)farm_no == 0xFFFF) farm_no = 0;
-	
-	selectedSerialPort = eeprom_read_byte((uint8_t*)EEPROM_SECOND_SERIAL_ACTIVE);
-	if (selectedSerialPort == 0xFF) 
-	    selectedSerialPort = 0;
-	if (farm_mode)
-	{ 
-		no_response = true; //we need confirmation by recieving PRUSA thx
-		important_status = 8;
-		prusa_statistics(8);
-		selectedSerialPort = 1;
-	}
-	MYSERIAL.begin(BAUDRATE);
-	fdev_setup_stream(uartout, uart_putchar, NULL, _FDEV_SETUP_WRITE); //setup uart out stream
-	stdout = uartout;
-	SERIAL_PROTOCOLLNPGM("start");
-	SERIAL_ECHO_START;
-	printf_P(PSTR(" "FW_VERSION_FULL"\n"));
-
-#if 0
-	SERIAL_ECHOLN("Reading eeprom from 0 to 100: start");
-	for (int i = 0; i < 4096; ++i) {
-		int b = eeprom_read_byte((unsigned char*)i);
-		if (b != 255) {
-			SERIAL_ECHO(i);
-			SERIAL_ECHO(":");
-			SERIAL_ECHO(b);
-			SERIAL_ECHOLN("");
-		}
-	}
-	SERIAL_ECHOLN("Reading eeprom from 0 to 100: done");
-#endif
-
-	// Check startup - does nothing if bootloader sets MCUSR to 0
-	byte mcu = MCUSR;
-/*	if (mcu & 1) SERIAL_ECHOLNRPGM(MSG_POWERUP);
-	if (mcu & 2) SERIAL_ECHOLNRPGM(MSG_EXTERNAL_RESET);
-	if (mcu & 4) SERIAL_ECHOLNRPGM(MSG_BROWNOUT_RESET);
-	if (mcu & 8) SERIAL_ECHOLNRPGM(MSG_WATCHDOG_RESET);
-	if (mcu & 32) SERIAL_ECHOLNRPGM(MSG_SOFTWARE_RESET);*/
-	if (mcu & 1) puts_P(MSG_POWERUP);
-	if (mcu & 2) puts_P(MSG_EXTERNAL_RESET);
-	if (mcu & 4) puts_P(MSG_BROWNOUT_RESET);
-	if (mcu & 8) puts_P(MSG_WATCHDOG_RESET);
-	if (mcu & 32) puts_P(MSG_SOFTWARE_RESET);
-	MCUSR = 0;
-
-	//SERIAL_ECHORPGM(MSG_MARLIN);
-	//SERIAL_ECHOLNRPGM(VERSION_STRING);
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
 	SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan

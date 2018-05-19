@@ -198,11 +198,6 @@ void MarlinSerial::end()
   cbi(M_UCSRxB, M_RXCIEx);
 
 #ifndef SNMM
-<<<<<<< HEAD
-  cbi(UCSR2B, RXEN2);
-  cbi(UCSR2B, TXEN2);
-  cbi(UCSR2B, RXCIE2);
-=======
   #ifdef USE_PORT_3_FOR_SECOND_SERIAL_PORT
     cbi(UCSR2B, RXEN2);
     cbi(UCSR2B, TXEN2);
@@ -212,7 +207,6 @@ void MarlinSerial::end()
     cbi(UCSR1B, TXEN1);
     cbi(UCSR1B, RXCIE1);
   #endif
->>>>>>> e235969... configure to use second serial port for Raspberry Pi
 #endif
 }
 

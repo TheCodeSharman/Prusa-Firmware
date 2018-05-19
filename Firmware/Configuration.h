@@ -83,6 +83,7 @@
 #define EEPROM_SD_SORT (EEPROM_CALIBRATION_STATUS_PINDA - 1) //0 -time, 1-alpha, 2-none
 #define EEPROM_XYZ_CAL_SKEW (EEPROM_SD_SORT - 4)
 #define EEPROM_WIZARD_ACTIVE (EEPROM_XYZ_CAL_SKEW - 1)
+#define EEPROM_SECOND_SERIAL_ACTIVE (EEPROM_XYZ_CAL_SKEW - 2)
 
 // Currently running firmware, each digit stored as uint16_t.
 // The flavor differentiates a dev, alpha, beta, release candidate or a release version.
