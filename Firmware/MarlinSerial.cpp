@@ -65,22 +65,51 @@ FORCE_INLINE void store_char(unsigned char c)
       }
   }
 #ifndef SNMM
-  SIGNAL(USART2_RX_vect)
+#ifdef USE_PORT_3_FOR_SECOND_SERIAL_PORT
+  ISR(USART2_RX_vect)
   {
-      if (selectedSerialPort == 1) {
-        // Test for a framing error.
-        if (UCSR2A & (1<<FE2)) {
-            // Characters received with the framing errors will be ignored.
-            // Dummy register read (discard)
-            (void)(*(char *)UDR2);
-        } else {
-            // Read the input register.
-            unsigned char c = UDR2;
-            store_char(c);
-            
-        }
-      }
+  // Test for a framing error.
+
+  if (UCSR2A & (1<<FE2))
+  {
+    // Characters received with the framing errors will be ignored.
+    // Dummy register read (discard)
+    (void)(*(char *)UDR2);
   }
+  else
+  {
+    // Read the input register.
+    unsigned char c = UDR2;
+    if (selectedSerialPort == 1)
+      store_char(c);
+#ifdef DEBUG_DUMP_TO_2ND_SERIAL
+    M_UDRx = c;
+#endif //DEBUG_DUMP_TO_2ND_SERIAL
+  }
+}
+#else
+  ISR(USART1_RX_vect)
+  {
+  // Test for a framing error.
+
+  if (UCSR1A & (1<<FE1))
+  {
+    // Characters received with the framing errors will be ignored.
+    // Dummy register read (discard)
+    (void)(*(char *)UDR1);
+  }
+  else
+  {
+    // Read the input register.
+    unsigned char c = UDR1;
+    if (selectedSerialPort == 1)
+      store_char(c);
+#ifdef DEBUG_DUMP_TO_2ND_SERIAL
+    M_UDRx = c;
+#endif //DEBUG_DUMP_TO_2ND_SERIAL
+  }
+}
+#endif 
 #endif
 #endif
 
@@ -127,20 +156,37 @@ void MarlinSerial::begin(long baud)
 
   if (selectedSerialPort == 1) { //set up also the second serial port 
 	  if (useU2X) {
-		  UCSR2A = 1 << U2X2;
+      #ifdef USE_PORT_3_FOR_SECOND_SERIAL_PORT
+        UCSR2A = 1 << U2X2;
+      #else
+		    UCSR1A = 1 << U2X1;
+      #endif
 		  baud_setting = (F_CPU / 4 / baud - 1) / 2;
 	  } else {
+      #ifdef USE_PORT_3_FOR_SECOND_SERIAL_PORT
 		  UCSR2A = 0;
+      #else
+      UCSR1A = 0;
+      #endif
 		  baud_setting = (F_CPU / 8 / baud - 1) / 2;
 	  }
 
 	  // assign the baud_setting, a.k.a. ubbr (USART Baud Rate Register)
-	  UBRR2H = baud_setting >> 8;
-	  UBRR2L = baud_setting;
-	  
-	  sbi(UCSR2B, RXEN2);
-	  sbi(UCSR2B, TXEN2);
-	  sbi(UCSR2B, RXCIE2);	  
+    #ifdef USE_PORT_3_FOR_SECOND_SERIAL_PORT
+      UBRR2H = baud_setting >> 8;
+      UBRR2L = baud_setting;
+      
+      sbi(UCSR2B, RXEN2);
+      sbi(UCSR2B, TXEN2);
+      sbi(UCSR2B, RXCIE2);
+    #else
+  	  UBRR1H = baud_setting >> 8;
+  	  UBRR1L = baud_setting;
+  	  
+  	  sbi(UCSR1B, RXEN1);
+  	  sbi(UCSR1B, TXEN1);
+  	  sbi(UCSR1B, RXCIE1);
+    #endif	  
   }
 #endif
 }
@@ -152,9 +198,21 @@ void MarlinSerial::end()
   cbi(M_UCSRxB, M_RXCIEx);
 
 #ifndef SNMM
+<<<<<<< HEAD
   cbi(UCSR2B, RXEN2);
   cbi(UCSR2B, TXEN2);
   cbi(UCSR2B, RXCIE2);
+=======
+  #ifdef USE_PORT_3_FOR_SECOND_SERIAL_PORT
+    cbi(UCSR2B, RXEN2);
+    cbi(UCSR2B, TXEN2);
+    cbi(UCSR2B, RXCIE2);
+  #else
+    cbi(UCSR1B, RXEN1);
+    cbi(UCSR1B, TXEN1);
+    cbi(UCSR1B, RXCIE1);
+  #endif
+>>>>>>> e235969... configure to use second serial port for Raspberry Pi
 #endif
 }
 

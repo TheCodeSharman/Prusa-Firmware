@@ -116,11 +116,15 @@ class MarlinSerial //: public Stream
 
 			M_UDRx = c;
 		}
-		else if (selectedSerialPort == 1) {
-			while (!((UCSR2A) & (1 << UDRE2)))
-				;
-
-			UDR2 = c;
+		else if (selectedSerialPort == 1)
+		{
+     #ifdef USE_PORT_3_FOR_SECOND_SERIAL_PORT
+  		while (!((UCSR2A) & (1 << UDRE2)));
+  		UDR2 = c;
+     #else
+      while (!((UCSR1A) & (1 << UDRE1)));
+      UDR1 = c;
+     #endif
 		}
 #endif
 	}
@@ -170,8 +174,28 @@ class MarlinSerial //: public Stream
                     selectedSerialPort = 0;
                 }
             }
-        } else if(selectedSerialPort == 1) {
-            if((UCSR2A & (1<<RXC2)) != 0) {
+        } else { // if(selectedSerialPort == 1) {
+          #ifdef USE_PORT_3_FOR_SECOND_SERIAL_PORT
+             if((UCSR2A & (1<<RXC2)) != 0) {
+                // Test for a framing error.
+                if (UCSR2A & (1<<FE2)) {
+                    // Characters received with the framing errors will be ignored.
+                    // The temporary variable "c" was made volatile, so the compiler does not optimize this out.
+                    volatile unsigned char c = UDR2;
+                } else {
+                    unsigned char c  =  UDR2;
+                    int i = (unsigned int)(rx_buffer.head + 1) % RX_BUFFER_SIZE;
+                    // if we should be storing the received character into the location
+                    // just before the tail (meaning that the head would advance to the
+                    // current location of the tail), we're about to overflow the buffer
+                    // and so we don't write the character or advance the head.
+                    if (i != rx_buffer.tail) {
+                        rx_buffer.buffer[rx_buffer.head] = c;
+                        rx_buffer.head = i;
+                    }
+                    //selectedSerialPort = 1;
+          #else
+            if((UCSR1A & (1<<RXC1)) != 0) {
                 // Test for a framing error.
                 if (UCSR2A & (1<<FE2)) {
                     // Characters received with the framing errors will be ignored.
@@ -187,7 +211,11 @@ class MarlinSerial //: public Stream
                         rx_buffer.buffer[rx_buffer.head] = c;
                         rx_buffer.head = i;
                     }
-                    selectedSerialPort = 1;
+                    //selectedSerialPort = 1;
+          #endif
+#ifdef DEBUG_DUMP_TO_2ND_SERIAL
+					M_UDRx = c;
+#endif //DEBUG_DUMP_TO_2ND_SERIAL
                 }
             }
         }

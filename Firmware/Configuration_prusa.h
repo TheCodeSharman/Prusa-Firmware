@@ -27,6 +27,8 @@ GENERAL SETTINGS
 //#define E3D_PT100_BED_WITH_AMP
 //#define E3D_PT100_BED_NO_AMP
 
+#define HAS_SECOND_SERIAL_PORT
+#define USE_PORT_3_FOR_SECOND_SERIAL_PORT
 
 /*------------------------------------
 AXIS SETTINGS
