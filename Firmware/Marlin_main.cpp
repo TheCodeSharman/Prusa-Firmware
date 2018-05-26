@@ -1460,6 +1460,18 @@ void proc_commands() {
 	}
 }
 
+void debug_output_buffer() {
+  if (selectedSerialPort == 1) {
+        selectedSerialPort = 0;
+        SERIAL_ECHOLNPGM("I got: ");
+        MYSERIAL.write(cmdbuffer);  
+        SERIAL_ECHOLNPGM("gcode_LastN = ");
+        SERIAL_ERRORLN(gcode_LastN);
+        
+        selectedSerialPort = 1;
+  }
+}
+
 void get_command()
 {
     // Test and reserve space for the new command string.
@@ -1498,6 +1510,7 @@ void get_command()
         return;
       }
       cmdbuffer[bufindw+serial_count+1] = 0; //terminate string
+      
       if(!comment_mode){
 	    // Line numbers must be first in buffer
 	    if ((strstr(cmdbuffer+bufindw+1, "PRUSA") == NULL) && 
@@ -1513,6 +1526,7 @@ void get_command()
                 SERIAL_ERROR_START;
                 SERIAL_ERRORRPGM(MSG_ERR_LINE_NO);
                 SERIAL_ERRORLN(gcode_LastN);
+                debug_output_buffer();
                 //Serial.println(gcode_N);
                 FlushSerialRequestResend();
                 serial_count = 0;
@@ -1528,6 +1542,7 @@ void get_command()
                 if (int(strtol(strchr_pointer+1, NULL, 10)) != int(checksum)) {
                 SERIAL_ERROR_START;
                 SERIAL_ERRORRPGM(MSG_ERR_CHECKSUM_MISMATCH);
+                debug_output_buffer();
                 SERIAL_ERRORLN(gcode_LastN);
                 FlushSerialRequestResend();
                 serial_count = 0;
@@ -1540,6 +1555,7 @@ void get_command()
             {
                 SERIAL_ERROR_START;
                 SERIAL_ERRORRPGM(MSG_ERR_NO_CHECKSUM);
+                debug_output_buffer();
                 SERIAL_ERRORLN(gcode_LastN);
                 FlushSerialRequestResend();
                 serial_count = 0;
@@ -1558,6 +1574,7 @@ void get_command()
         {
             SERIAL_ERROR_START;
             SERIAL_ERRORRPGM(MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM);
+            debug_output_buffer(); 
             SERIAL_ERRORLN(gcode_LastN);
             serial_count = 0;
             return;

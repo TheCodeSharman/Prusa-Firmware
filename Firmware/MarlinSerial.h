@@ -197,11 +197,11 @@ class MarlinSerial //: public Stream
           #else
             if((UCSR1A & (1<<RXC1)) != 0) {
                 // Test for a framing error.
-                if (UCSR2A & (1<<FE2)) {
+                if (UCSR1A & (1<<FE1)) {
                     // Characters received with the framing errors will be ignored.
-                    (void)(*(char *)UDR2);
+                    (void)(*(char *)UDR1);
                 } else {
-                    unsigned char c  =  UDR2;
+                    unsigned char c  =  UDR1;
                     int i = (unsigned int)(rx_buffer.head + 1) % RX_BUFFER_SIZE;
                     // if we should be storing the received character into the location
                     // just before the tail (meaning that the head would advance to the
