@@ -1486,11 +1486,14 @@ void get_command()
 		  rx_buffer_full = true;				//sets flag that buffer was full	
 	  }
     char serial_char = MYSERIAL.read();
+    
+    /*
     if (selectedSerialPort == 1) {
         selectedSerialPort = 0;
         MYSERIAL.write(serial_char);
         selectedSerialPort = 1;
     }
+    */
       TimeSent = millis();
       TimeNow = millis();
 
