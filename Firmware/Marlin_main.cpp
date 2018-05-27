@@ -1040,9 +1040,7 @@ void setup()
 		no_response = true; //we need confirmation by recieving PRUSA thx
 		important_status = 8;
         selectedSerialPort = 1;
-	} else {
-        selectedSerialPort = 0;
-    }
+	} 
 	MYSERIAL.begin(BAUDRATE);
 	SERIAL_PROTOCOLLNPGM("start");
 	SERIAL_ECHO_START;
